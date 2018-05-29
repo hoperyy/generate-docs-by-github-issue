@@ -3,62 +3,54 @@ const fs = require('fs');
 const fse = require('fs-extra');
 const path = require('path');
 
-class Utils {
-    writeFileSync(filePath, content) {
-        fse.ensureFileSync(filePath);
-        const fd = fs.openSync(filePath, 'w+');
-        fs.writeFileSync(filePath, content);
-        fs.close(fd);
-    }
+function writeFileSync(filePath, content) {
+    fse.ensureFileSync(filePath);
+    const fd = fs.openSync(filePath, 'w+');
+    fs.writeFileSync(filePath, content);
+    fs.close(fd);
 }
 
-class Generate {
-    constructor({ targetDir, username, repo }) {
-        if (!username || !repo) {
-            console.log('username and repo required');
-            return;
-        }
-
-        if (!targetDir) {
-            console.log('targetDir required (absolute path)');
-            return;
-        }
-
-        this.utiles = new Utils();
-
-        this.targetDir = targetDir;
-
-        this.options = {
-            url: `https://api.github.com/repos/${username}/${repo}/issues`,
-            headers: {
-                'User-Agent': 'request'
-            }
-        };
-
-        this.request()
-            .then(sortedIssues => {
-                // fse.removeSync(this.targetDir);
-                sortedIssues.forEach(this.createMarkdownByIssueItem.bind(this));
-            })
-            .catch(err => {
-                throw Error(err);
-            });
+function run({ targetDir, username, repo }) {
+    if (!username || !repo) {
+        console.log('username and repo required');
+        return;
     }
 
-    createMarkdownByIssueItem(issueItem) {
+    if (!targetDir) {
+        console.log('targetDir required (absolute path)');
+        return;
+    }
+
+    const options = {
+        url: `https://api.github.com/repos/${username}/${repo}/issues`,
+        headers: {
+            'User-Agent': 'request'
+        }
+    };
+
+    _request()
+        .then(sortedIssues => {
+            // fse.removeSync(this.targetDir);
+            sortedIssues.forEach(createMarkdownByIssueItem);
+        })
+        .catch(err => {
+            throw Error(err);
+        });
+
+    function createMarkdownByIssueItem(issueItem) {
         const title = issueItem.title;
-        const targetMarkdown = path.join(this.targetDir, title) + '.md';
+        const targetMarkdown = path.join(targetDir, title) + '.md';
 
         let content = issueItem.body;
 
         content = `[issue](${issueItem.url})\n\n` + content;
 
-        this.utiles.writeFileSync(targetMarkdown, content);
+        writeFileSync(targetMarkdown, content);
     }
 
-    request() {
+    function _request() {
         return new Promise((resolve, reject) => {
-            request(this.options, (error, response, body) => {
+            request(options, (error, response, body) => {
                 if (error) {
                     reject(error);
                     return;
@@ -70,15 +62,15 @@ class Generate {
                 }
 
                 // sort by title
-                const sortedIssues = this.sortByTitle(JSON.parse(body));
+                const sortedIssues = sortByTitle(JSON.parse(body));
 
                 resolve(sortedIssues);
                 // console.log('body:', sortedIssues); // Print the HTML for the Google homepage.
             });
-        });  
+        });
     }
 
-    sortByTitle(issues) {
+    function sortByTitle(issues) {
         const result = [];
 
         const titleMap = {}; // key: title, value: issueItem
@@ -100,4 +92,4 @@ class Generate {
     }
 }
 
-new Generate({ username: 'hoperyy', repo: 'home', targetDir: path.join(process.cwd(), 'testDocs') });
+module.exports = run;
