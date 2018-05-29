@@ -11,7 +11,7 @@ function writeFileSync(filePath, content) {
     fs.close(fd);
 }
 
-function run({ targetDir, username, repo, preWriting }) {
+function run({ targetDir, username, repo, beforeSort, afterSort }) {
     if (!username || !repo) {
         console.log('username and repo required');
         return;
@@ -32,16 +32,20 @@ function run({ targetDir, username, repo, preWriting }) {
             onePageIssues = yield _request(`?page=${pageNum}`);
         }
 
+        if (beforeSort) {
+            beforeSort(allIssues);
+        }
+
         const sortedIssues = sortByTitle(allIssues);
+
+        if (afterSort) {
+            afterSort(sortedIssues);
+        }
 
         sortedIssues.forEach(createMarkdownByIssueItem);
     });
 
     function createMarkdownByIssueItem(issueItem) {
-        if (preWriting) {
-            preWriting(issueItem);
-        }
-        
         const title = issueItem.title;
         const targetMarkdown = path.join(targetDir, title) + '.md';
 
