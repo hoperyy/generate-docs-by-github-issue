@@ -10,7 +10,7 @@ function writeFileSync(filePath, content) {
     fs.close(fd);
 }
 
-function run({ targetDir, username, repo }) {
+function run({ targetDir, username, repo, preWriting }) {
     if (!username || !repo) {
         console.log('username and repo required');
         return;
@@ -38,12 +38,16 @@ function run({ targetDir, username, repo }) {
         });
 
     function createMarkdownByIssueItem(issueItem) {
+        if (preWriting) {
+            preWriting(issueItem);
+        }
+        
         const title = issueItem.title;
         const targetMarkdown = path.join(targetDir, title) + '.md';
 
         let content = issueItem.body;
 
-        content = `[issue](${issueItem.url})\n\n` + content;
+        content = `[issue](${issueItem.html_url})\n\n` + content;
 
         writeFileSync(targetMarkdown, content);
     }
