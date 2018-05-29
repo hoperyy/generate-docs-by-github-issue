@@ -1,0 +1,24 @@
+{
+  "name": "generate-docs-by-github-issue",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "fs-extra": "^6.0.1",
+    "request": "^2.87.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hoperyy/generate-docs-by-github-issue.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hoperyy/generate-docs-by-github-issue/issues"
+  },
+  "homepage": "https://github.com/hoperyy/generate-docs-by-github-issue#readme"
+}
