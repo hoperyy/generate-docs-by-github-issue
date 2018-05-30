@@ -26,13 +26,13 @@ function run({ targetDir, username, repo, beforeSort, afterSort }) {
         let allIssues = [];
         let pageNum = 1;
         let onePageIssues = yield requestIssues(`?page=1`);
-        console.log(onePageIssues.length);
         while (onePageIssues.length) {
             allIssues = allIssues.concat(onePageIssues);
             pageNum++;
-            console.log('pageNum ', pageNum);
             onePageIssues = yield requestIssues(`?page=${pageNum}`);
         }
+
+        // allIssues = require('./issues.js')
 
         if (beforeSort) {
             beforeSort(allIssues);
@@ -75,9 +75,6 @@ function run({ targetDir, username, repo, beforeSort, afterSort }) {
                     done('response code not 200');
                     return;
                 }
-
-                // sort by title
-                // const sortedIssues = sortByTitle(JSON.parse(body));
 
                 done(null, JSON.parse(body));
             });
