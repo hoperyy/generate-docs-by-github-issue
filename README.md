@@ -8,8 +8,15 @@ generate({
     targetDir: path.join(__dirname, 'docs'),
     username: 'xxx',
     repo: 'xxx',
-    preWriting(issueItem) {
-        issueItem.title = issueItem.title.replace(/\//g, '-');
+    beforeSort(issues) {
+        issues.forEach(issue => {
+            issue.title = issue.title.replace(/\//g, '-');
+        });
+    }
+    afterSort(issues) {
+        issues.forEach(issue => {
+            console.log(issue.title);
+        })   
     }
 });
 ```
