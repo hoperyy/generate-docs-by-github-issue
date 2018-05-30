@@ -25,11 +25,13 @@ function run({ targetDir, username, repo, beforeSort, afterSort }) {
     co(function*() {
         let allIssues = [];
         let pageNum = 1;
-        let onePageIssues = yield _request(`?page=1`);
+        let onePageIssues = yield requestIssues(`?page=1`);
+        console.log(onePageIssues.length);
         while (onePageIssues.length) {
             allIssues = allIssues.concat(onePageIssues);
             pageNum++;
-            onePageIssues = yield _request(`?page=${pageNum}`);
+            console.log('pageNum ', pageNum);
+            onePageIssues = yield requestIssues(`?page=${pageNum}`);
         }
 
         if (beforeSort) {
@@ -47,39 +49,39 @@ function run({ targetDir, username, repo, beforeSort, afterSort }) {
 
     function createMarkdownByIssueItem(issueItem) {
         const title = issueItem.title;
-        const targetMarkdown = path.join(targetDir, title) + '.md';
+        const targetMarkdown = `${path.join(targetDir, title)}.md`;
 
         let content = issueItem.body;
 
-        content = `[issue](${issueItem.html_url})\n\n` + content;
+        content = `[issue](${issueItem.html_url})\n\n${content}`;
 
         writeFileSync(targetMarkdown, content);
     }
 
-    function _request(params) {
+    function requestIssues(params) {
         return done => {
             request({
                 url: `https://api.github.com/repos/${username}/${repo}/issues${params}`,
-                    headers: {
-                        'User-Agent': 'request'
-                    }
-                }, (error, response, body) => {
-                    if (error) {
-                        reject(error);
-                        return;
-                    }
+                headers: {
+                    'User-Agent': 'request'
+                }
+            }, (error, response, body) => {
+                if (error) {
+                    done(error);
+                    return;
+                }
 
-                    if (!response || response.statusCode !== 200) {
-                        reject('response code not 200');
-                        return;
-                    }
+                if (!response || response.statusCode !== 200) {
+                    done('response code not 200');
+                    return;
+                }
 
-                    // sort by title
-                    // const sortedIssues = sortByTitle(JSON.parse(body));
+                // sort by title
+                // const sortedIssues = sortByTitle(JSON.parse(body));
 
-                    done(null, JSON.parse(body));
-                });
-        }
+                done(null, JSON.parse(body));
+            });
+        };
     }
 
     function sortByTitle(issues) {
